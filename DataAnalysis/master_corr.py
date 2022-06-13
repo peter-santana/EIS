@@ -20,7 +20,7 @@ eiscal_dir = os.getcwd() + '/'
 
 sys.path.append(eiscal_dir + 'utils/')
 from pf_corr import pf_corr  # noqa
-from preproc import preproc # noqa
+from preproc import preproc  # noqa
 
 
 def master_corr_old(rawdir):
@@ -474,69 +474,102 @@ def get_darkbasename(flbase, darknum):
     return darkbase
 
 
+def build_file_list(datadir):
+
+    if 'FILTERS' in datadir:
+
+        file_list = []
+
+        all_files = glob.glob(datadir + '*i.fit')
+        total_files = len(all_files)
+        assert total_files % 2 == 0
+
+        fn_arr = np.arange(0, total_files, 2)
+        fl_prefix = os.path.basename(all_files[0]).split('_')
+        fl_prefix = '_'.join(fl_prefix[:-1])
+
+        for f in fn_arr:
+
+            f = str(f)
+            if len(f) == 1:
+                leadzeros = '000'
+            elif len(f) == 2:
+                leadzeros = '00'
+            elif len(f) == 3:
+                leadzeros = '0'
+            elif len(f) == 4:
+                leadzeros = ''
+
+            fl = datadir + fl_prefix + '_' + leadzeros + f + 'i.fit'
+
+            file_list.append(fl)
+
+    else:
+        file_list = glob.glob(datadir + '*i.fit')
+
+    return file_list
+
+
 def master_corr(datadir, outdir, flags, darksdir):
 
-
-
-
-    file_list = glob.glob(datadir + '*i.fit')
-
-    
-
-
+    file_list = build_file_list(datadir)
 
     for fl in tqdm(file_list, desc='Processing', leave=False):
-
-
 
         flbase = os.path.basename(fl)        
         newflname = outdir + flbase.replace('i.fit', '_corr.fit')
 
+        # Check reprocessing
         if not flags['reprocess']:
             if os.path.isfile(newflname):
                 tqdm.write('\n' + newflname +
                            '  Corrected file exists. Moving to next.')
                 continue
 
+        # Darks other folder case
+        if flags['darks_other_folder']:
+            all_darks = glob.glob(darksdir + flags['dark_match_str'])
 
         # Preprocess image file
         img, hdr = fits.getdata(fl, header=True)
+
+        print('Working on file:', flbase)
+        if 'FILTERS' in datadir:
+            assert '6 wanted 6' not in hdr['SMNFILTR']
+
         img = preproc(img)
 
+        # Now go through all the potential cases
         if flags['pf_correct'] and flags['dark_correct']:
-
 
             # PF correct image
             pf_img = pf_corr(img, flags['instrument'])
 
-            #Darks other folder case
+            # Darks other folder case
             if flags['darks_other_folder']:
-                dark_list = glob.glob(darksdir + '*.fit')
-                dark_num = fl.split('_')[-1] 
-                dark_num = dark_num.replace('i.fit', 'b.fit')
 
-                print(dark_num)
-                print(dark_list)
+                dark_prefix = os.path.basename(all_darks[0]).split('_')
+                dark_prefix = '_'.join(dark_prefix[:-1])
 
+                if 'b' in flags['dark_match_str']:
+                    dark_base = flbase.split('_')[-1].replace('i.fit', 'b.fit')
+                elif 'i' in flags['dark_match_str']:
+                    dark_base = flbase.split('_')[-1]
 
-                for i in dark_list:
-                    if dark_num in i:
-                        dark_fl = i
-                        break
+                dark_fl = darksdir + dark_prefix + '_' + dark_base
 
-
-                print(dark_fl)
-
-
+                assert os.path.isfile(dark_fl)
 
             # Get dark file name
             else: 
                 dark_fl = get_darkbasename(flbase, flags['dark_num'])
                 dark_fl = datadir + dark_fl
 
-
-
-            
+            # Special case of *FILTERS tests
+            # where the file number changes but the 
+            # darks still have an i.fit at the end.
+            if 'FILTERS' in datadir:
+                dark_fl = dark_fl.replace('b.fit', 'i.fit')
 
             # Now pre-process dark
             dimg = fits.getdata(dark_fl)
@@ -554,9 +587,31 @@ def master_corr(datadir, outdir, flags, darksdir):
 
         elif (not flags['pf_correct']) and flags['dark_correct']:
 
+            # Darks other folder case
+            if flags['darks_other_folder']:
+
+                dark_prefix = os.path.basename(all_darks[0]).split('_')
+                dark_prefix = '_'.join(dark_prefix[:-1])
+
+                if 'b' in flags['dark_match_str']:
+                    dark_base = flbase.split('_')[-1].replace('i.fit', 'b.fit')
+                elif 'i' in flags['dark_match_str']:
+                    dark_base = flbase.split('_')[-1]
+
+                dark_fl = darksdir + dark_prefix + '_' + dark_base
+
+                assert os.path.isfile(dark_fl)
+
             # Get dark file name
-            dark_fl = get_darkbasename(flbase, flags['dark_num'])
-            dark_fl = datadir + dark_fl
+            else:
+                dark_fl = get_darkbasename(flbase, flags['dark_num'])
+                dark_fl = datadir + dark_fl
+
+            # Special case of *FILTERS tests
+            # where the file number changes but the 
+            # darks still have an i.fit at the end.
+            if 'FILTERS' in datadir:
+                dark_fl = dark_fl.replace('b.fit', 'i.fit')
 
             # Now pre-process dark
             dimg = fits.getdata(dark_fl)
@@ -578,13 +633,6 @@ def master_corr(datadir, outdir, flags, darksdir):
             hdr['PFCORR'] = 'True'
             hdr['DARKCORR'] = 'False'
 
-
-
-
-
-
-
-
         # Write processed file
         hdr['INSTRU'] = flags['instrument']
         nhdu = fits.PrimaryHDU(data=img, header=hdr)
@@ -598,33 +646,26 @@ def master_corr(datadir, outdir, flags, darksdir):
 if __name__ == '__main__':
 
     # Define data directory
-    basedir = '/Volumes/EIS_Cal/Lab_Data/WAC_FM/Final_Cal/OFS/'
+    basedir = '/Volumes/EVE/Lab_Data/OFS/'
     rawdir = basedir + '20220526_213330_OFS_SPHERE_1000X/'
-    darksdir = '20220526_233813_OFS_SPHERE_1000X_BKG/'
-    darkrawdir = basedir + darksdir
+    darkrawdir = basedir + '20220526_233813_OFS_SPHERE_1000X_BKG/'
 
     # Define output directory
-    outdir = rawdir + 'analysis/'
+    outdir = rawdir + 'analysis_bkgonly/'
 
     if not os.path.isdir(outdir):
         os.mkdir(outdir)
 
     # Flags
-    flags = {'pf_correct': True,
+    flags = {'pf_correct': False,
              'dark_correct': True,
              'instrument': 'WAC_FM',
              'reprocess': True,
              'dark_num': +1,
-             'darks_other_folder': True}
-
-
-    if 'darks_other_folder' == False:
-        darkrawdir = rawdir
-
-
+             'darks_other_folder': False,
+             'dark_match_str': '*i.fit'}
 
     master_corr(rawdir, outdir, flags, darkrawdir)
-
 
     sys.exit(0)
 # END OF FILE
