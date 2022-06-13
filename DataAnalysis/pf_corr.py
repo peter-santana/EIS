@@ -80,14 +80,14 @@ def pf_corr(imgdat, instrument):
     if instrument == 'WAC_FM':
         # ROWS; top and bottom
         rt1 = 4
-        rt2 = 20
-        rb1 = 2018
-        rb2 = 2038
+        rt2 = 15
+        rb1 = 2030
+        rb2 = 2039
         # COLS; left and right
         cl1 = 4
-        cl2 = 24
-        cr1 = 4070
-        cr2 = 4088
+        cl2 = 20
+        cr1 = 4082
+        cr2 = 4089
 
     elif instrument == 'WAC_EM':
         # ROWS; top and bottom
