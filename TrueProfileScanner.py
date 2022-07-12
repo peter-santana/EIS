@@ -18,7 +18,9 @@ def profile_analysis(column, datadir):
 
 	Readout_ports = np.arange(0, 4097, 256)
 
-	file = open("20220518_194535_WAC_MTF_TARGET_3X3_WHITE_0.5X_dark+row_col.txt", "w")
+	file = open("20220526_213330_OFS_SPHERE_1000X_darkpf.txt", "w")
+
+	average_magnitudes = []
 
 
 
@@ -42,6 +44,8 @@ def profile_analysis(column, datadir):
 
 		magnitude = 0
 
+		magnitudes = []
+
 
 		while scan_count < 5:
 
@@ -60,6 +64,10 @@ def profile_analysis(column, datadir):
 
 			profile = skimage.measure.profile_line(img, start, end, linewidth=10)
 
+			magnitude = np.amin(profile)
+
+			magnitudes.append(magnitude)
+
 
 
 			fig, ax = plt.subplots(1, 2, figsize=(12,4))
@@ -70,23 +78,41 @@ def profile_analysis(column, datadir):
 			ax[1].set_title('Profile')
 			ax[1].plot(profile)
 			ax[1].invert_xaxis()
-			fig.text(.15, .9, "offset: " + str(offset))
+			fig.text(.15, .9, "Magnitude: " + str(magnitude))
 			fig.text(.15, .86, "Exposure Time: " + str(exposure_time))
 			fig.text(.15, .82, "Rowtmprm: " + str(rowtmprm))
 			fig.text(.15, .94, name)
 
 
 
-			plt.savefig("/Users/santapl1/Desktop/Profiles/20220518_194535_WAC_MTF_TARGET_3X3_WHITE_0.5X_Row_corr_and_dark/" + tail + str(scan_count) + ".png")
+			plt.savefig("/Users/santapl1/Desktop/Profiles/20220526_213330_OFS_SPHERE_1000X_darkpf/" + tail + str(scan_count) + ".png")
 	
 
 
-			magnitude = np.amin(profile)
+			
 
 			file.write(tail + str(scan_count) + "  magnitude is: " + str(magnitude) + "\n")
 
+			if scan_count == 4:
+
+				average_magnitudes.append(np.average(magnitudes))
+
+				file.write(str(average_magnitudes))
+
+
+
 			scan_count += 1
 			column += increase
+
+	print(average_magnitudes)
+
+	
+
+
+
+
+
+				
 
 			
 
@@ -97,8 +123,8 @@ def profile_analysis(column, datadir):
 if __name__ == '__main__':
 
 	# Define data directory
-    basedir = '/Volumes/EVE/Lab_Data/MTF/20220518_194535_WAC_MTF_TARGET_3X3_WHITE_0.5X/'
-    rawdir = basedir + 'analysis/dark+row_col/'
+    basedir = '/Volumes/EVE/Lab_Data/OFS/20220526_213330_OFS_SPHERE_1000X/'
+    rawdir = basedir + 'analysis/Dark+pf/'
 
 
     starting_column = 300
