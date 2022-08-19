@@ -18,7 +18,7 @@ def profile_analysis(column, datadir):
 
 	Readout_ports = np.arange(0, 4097, 256)
 
-	file = open("20220526_213330_OFS_SPHERE_1000X_darkpf.txt", "w")
+	file = open("0.5whitecolonly.txt", "w")
 
 	average_magnitudes = []
 
@@ -85,7 +85,7 @@ def profile_analysis(column, datadir):
 
 
 
-			plt.savefig("/Users/santapl1/Desktop/Profiles/20220526_213330_OFS_SPHERE_1000X_darkpf/" + tail + str(scan_count) + ".png")
+			plt.savefig("/Users/santapl1/Desktop/Profiles/0.5pf/" + tail + str(scan_count) + ".png")
 	
 
 
@@ -123,8 +123,8 @@ def profile_analysis(column, datadir):
 if __name__ == '__main__':
 
 	# Define data directory
-    basedir = '/Volumes/EVE/Lab_Data/OFS/20220526_213330_OFS_SPHERE_1000X/'
-    rawdir = basedir + 'analysis/Dark+pf/'
+    basedir = '/Volumes/EVE/Lab_Data/MTF/20220518_194535_WAC_MTF_TARGET_3X3_WHITE_0.5X/'
+    rawdir = basedir + 'analysis/Row_corr_only/'
 
 
     starting_column = 300

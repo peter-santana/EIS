@@ -19,9 +19,9 @@ import numpy as np
 def mediancombine(filelist):
   
     n = len(filelist)
-    print(n)
+    
 
-
+    #Input size of fits, make sure that all fits to be stacked are of the same dimensions
     fits_stack = np.zeros((2048, 4096 , n)) 
 
     for ii in range(0, n):
@@ -30,7 +30,7 @@ def mediancombine(filelist):
         # print(np.amax(imgdat))
         fits_stack[:,:,ii] = imgdat
 
-        print(np.amax(fits_stack))
+
 
     
 
@@ -43,21 +43,18 @@ def mediancombine(filelist):
 if __name__ == '__main__':
 
 
-    datadir = '/disks/deu01a/data/prelaunch/WAC_FM/20220509_calibration/20220524_174122_FLAT_FIELD_PAN_LOW_GAIN/analysis/Dark/'
-
+    datadir = '/disks/deu01a/data/prelaunch/WAC_FM/20220509_calibration/20220524_225220_FLAT_FIELD_COLOR/analysis/Dark/'
 
 	
     image_list = glob.glob(datadir + '*r.fit')
 
-    # image_list = image_list[:50]
 
     max_stack = mediancombine(image_list)
 
-    # print(max_stack)
 
     hdu = fits.PrimaryHDU(max_stack, do_not_scale_image_data=True)
 
-    hdu.writeto('/homes/eissoccal/eis-cal-analysis/peter/Flat_Field_Pan_Low_Gain_Second_Run_Max.fit', overwrite=True)
+    hdu.writeto('/homes/eissoccal/eis-cal-analysis/peter/FlatFieldColorMaxNUV.fit', overwrite=True)
 
 
     sys.exit(0)

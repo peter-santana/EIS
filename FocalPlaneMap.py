@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 def edge_read(fl):
 
-	file = open("Upper_right_filter_corner.txt", "w")
+	file = open("Upper_left_filter_corner.txt", "w")
 
 	head, tail = os.path.split(fl)
 
@@ -19,13 +19,13 @@ def edge_read(fl):
 
 	img = fitsFile[0].data
 
-	column_start = (2030, img.shape[1]-50)
+	column_start = (2030, 50)
 
-	column_end = (1980, img.shape[1]-50)
+	column_end = (1980, 50)
 
-	row_start = (1980, img.shape[1])
+	row_start = (2000, 0)
 
-	row_end = (1980, img.shape[1]-50)
+	row_end = (2000, 50)
 
 	row_profile = skimage.measure.profile_line(img, row_start, row_end, linewidth=10)
 
@@ -70,7 +70,7 @@ def edge_read(fl):
 
 
 	
-	plt.savefig("/Users/santapl1/Desktop/Edges/UpperRightFilterCorner" + ".png")
+	plt.savefig("/Users/santapl1/Desktop/Edges/UpperLeftFilterCorner" + ".png")
 
 
 if __name__ == '__main__':
