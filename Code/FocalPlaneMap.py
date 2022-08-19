@@ -18,19 +18,25 @@ def edge_read(fl):
 	fitsFile = fits.open(fl)
 
 	img = fitsFile[0].data
-
+	
+	#change values here to mark where you want your column read line to start and end
 	column_start = (2030, 50)
 
 	column_end = (1980, 50)
 
+	#change values here to mark where you want your row read line to start and end
 	row_start = (2000, 0)
 
 	row_end = (2000, 50)
-
+	
+	
+	#linewidth here is how many lines you want to read at a time
 	row_profile = skimage.measure.profile_line(img, row_start, row_end, linewidth=10)
 
 	column_profile = skimage.measure.profile_line(img, column_start, column_end, linewidth=10)
-
+	
+	#row_x_Array and column_x_array is to mark the plot X values
+	#It may be required to inverse the column array, same thing with rows
 	row_x_array = np.arange(img.shape[1]-50, img.shape[1]+1)
 
 	column_x_array = np.arange(1980, 2031)
