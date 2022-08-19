@@ -10,7 +10,8 @@ import os
 import glob
 
 def stripe_read(fl):
-
+	
+	#Values will be written to this file
 	file = open("Blue.txt", "w")
 
 	head, tail = os.path.split(fl)
@@ -18,7 +19,9 @@ def stripe_read(fl):
 	fitsFile = fits.open(fl)
 
 	img = fitsFile[0].data
-
+	
+	
+	#Determine the coordinates for the 3 columns that will be read out
 	right_start = (1658, 4013)
 
 	right_end = (1694, 4013)
@@ -30,13 +33,16 @@ def stripe_read(fl):
 	center_start = (1658, 2110)
 
 	center_end = (1694, 2110)
+	
+	#Linewidth is how many lines you want to read at a time
 
 	right_profile = skimage.measure.profile_line(img, right_start, right_end, linewidth=1)
 
 	left_profile = skimage.measure.profile_line(img, left_start, left_end, linewidth=1)
 
 	center_profile = skimage.measure.profile_line(img, center_start, center_end, linewidth=1)
-
+	
+	#arrays for plots
 	left_x_array = np.arange(1658, 1694  + 1)
 
 	right_x_array = np.arange(1658, 1694  + 1)
@@ -123,7 +129,7 @@ def stripe_read(fl):
 
 if __name__ == '__main__':
 
-	# Define data directory
+# Define data directory
     basedir = '/Users/santapl1/Desktop/MaxTest/'
     rawdir = basedir + 'FlatFieldColorMax.fit'
 
